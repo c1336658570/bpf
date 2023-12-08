@@ -1,0 +1,6 @@
+# bpftool的脚本，一次性批量执行命令
+# sudo bpftool batch file example.txt
+# Create a new hash map
+map create /sys/fs/bpf/hash_map type hash key 4 value 4 entries 5 name hash_map
+# Now show all the maps in the system
+map show
