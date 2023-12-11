@@ -16,14 +16,20 @@
 #include "profile.h"
 #include "blazesym.h"
 
-/*
- * This function is from libbpf, but it is not a public API and can only be
- * used for demonstration. We can use this here because we statically link
- * against the libbpf built from submodule during build.
- */
+// 这个函数来自于 libbpf，但它不是一个公共API，仅供演示目的使用。我们可以在这里使用它，因为在构建过程中我们是静态链接到从子模块构建的 libbpf。
+// 一个字符串，表示 CPU 掩码文件的路径。该文件包含有关系统上哪些 CPU 处于在线状态的信息。
+// 一个指向指针的指针，用于存储解析得到的 CPU 掩码信息。每个布尔值表示对应的 CPU 是否在线。
+// 一个指向整数的指针，用于存储解析得到的 CPU 掩码的大小，即在线 CPU 的数量。
+// 函数的返回值是一个整数，表示函数执行的结果。如果函数成功解析 CPU 掩码文件并填充了相关信息，则返回 0；否则，返回一个非零的错误码，表示解析过程中发生了错误。
 extern int parse_cpu_mask_file(const char *fcpu, bool **mask, int *mask_sz);
 
 // 定义 perf_event_open 系统调用，因为该系统调用的号码在头文件中没有定义
+// 指向 struct perf_event_attr 结构体的指针，该结构体包含了所要设置的性能事件的属性。
+// 指定关联的进程的PID（Process ID）。如果设置为 -1，则表示将性能事件关联到所有进程。
+// 指定关联的CPU。如果设置为 -1，则表示将性能事件关联到所有CPU。
+// 指定事件组的文件描述符。如果不是事件组中的第一个事件，可以通过该参数指定事件组的文件描述符。
+// 一组标志位，用于控制性能事件的行为。可能包含 PERF_FLAG_FD_CLOEXEC 等标志。
+// 返回值是一个文件描述符，用于后续对性能事件的读取或控制，或者在发生错误时返回负数。
 static long perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_fd,
 			    unsigned long flags)
 {
