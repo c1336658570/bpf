@@ -2,6 +2,8 @@ package main
 
 import "fmt"
 
+// uprobes
+
 /*
 一般来说，uprobes是内核在程序特定指令执行之前插入该指令集的钩子。当
 附加uprobes到程序的不同版本时要注意，因为在不同版本之间函数签名可

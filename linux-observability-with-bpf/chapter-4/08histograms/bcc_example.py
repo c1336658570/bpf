@@ -4,9 +4,14 @@ from time import sleep
 
 from bcc import BPF
 
+# sudo python bcc_example.py
+
 # 直方图
 
 # 使用kprobes收集函数完成的时间，同时，我们将在一个直方图中累积结果，用于后面对直方图进行可视化。
+
+# 将演示当一个应用程序调用 bpf_prog_load加载 BPF 程序时，如何使用 BCC 直方图对加载的延迟进行可视化。在这个
+# 示例中，我们使用 kprobes 收集函数完成的时间，同时，我们将在一个直方图中累积结果，用于后面对直方图进行可视化。
 
 def signal_ignore(signal, frame):
     print()

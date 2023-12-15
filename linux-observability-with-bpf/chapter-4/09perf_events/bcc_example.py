@@ -1,5 +1,7 @@
 from bcc import BPF
 
+# sudo python bcc_example.py 
+
 # Perf事件
 
 # 使用Perf事件来获得二进制执行信息，以及对获得的信息进行分类，并打印出系统中执行最频繁的程序。
@@ -7,7 +9,7 @@ from bcc import BPF
 bpf_source = """
 #include <uapi/linux/ptrace.h>
 
-// 使用宏BPF-PERF-OUTPUT声明一个名为events的Perf事件映射。这个宏由BCC提供，用于方便地声明Perf事件映射。
+// 使用宏BPF_PERF_OUTPUT声明一个名为events的Perf事件映射。这个宏由BCC提供，用于方便地声明Perf事件映射。
 BPF_PERF_OUTPUT(events);
 
 int do_sys_execve(struct pt_regs *ctx, void *filename, void *argv, void *envp) {
@@ -25,6 +27,7 @@ bpf = BPF(text = bpf_source)
 execve_function = bpf.get_syscall_fnname("execve")
 bpf.attach_kprobe(event = execve_function, fn_name = "do_sys_execve")
 
+# 从 Python 标准库导人依赖库。我们将使用 Python 的 Counter 来聚合从 BPF 程序收到的事件 。
 from collections import Counter
 # 声明计数器来保存程序信息。使用程序名作为键，值将是计数器。
 aggregates = Counter()

@@ -32,7 +32,7 @@ int load_bpf_file(char *path) {
     goto cleanup;
   }
 
-  // 查找BPF程序
+  // 查找BPF程序。用于在BPF对象文件（通过obj变量表示）中查找一个特定名称的BPF程序。
   prog = bpf_object__find_program_by_name(obj, "bpf_prog");
   if (!prog) {
     printf("finding a prog in obj file failed\n");

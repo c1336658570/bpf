@@ -172,6 +172,8 @@ sudo bpftool prog dump xlated id 472
    6: (b7) r0 = 0
    7: (95) exit
 
+sudo bpftool prog dump jited id 472
+
 # 如果想得到这个程序的更直观的表示(包括指令跳转) ，可以在命令中使用visual关键字，用于产生特定格式输出。我们可以使用诸如dotty之类的工具，或任何其他可以绘制图形的程序，将这个输出转换为图形表示:
 
 # 以可视化的方式获取 ID 为 472 的 BPF 程序的已翻译信息，并将输出结果保存到名为 output.out 的文件中
@@ -240,6 +242,10 @@ key: 02 00 00 00  value: 00 00 00 00
 key: 03 00 00 00  value: 00 00 00 00
 key: 04 00 00 00  value: 00 00 00 00
 Found 5 elements
+
+sudo bpftool map delete 396      # 删除map
+
+sudo bpftool btf list      # 查看已加载的 BTF 对象。
 
 # BPFTool提供最强大的选项之一是可以将预创建映射附加到新程序，使用这些预分配映射替换初始化的映射。这样，即使你没有编写从BPF文件系统中读取映射的程序，也可以从头开始让程序访问到保存的数据。为了实现这个目的， 当使用 BPFTool加载程序时，需要设置需要初始化的映射。当程序加载映射时，可以通过标识符的顺序来指定程序的映射，例如，0是第一个映射，1是第二个映射 ，以此类推。你也可以通过名字指定映射，这样通常更方便:
 sudo bpftool prog load bpf_prog.o /sys/fs/bpf/bpf_prog_2 map name counter /sys/fs/bpf/counter

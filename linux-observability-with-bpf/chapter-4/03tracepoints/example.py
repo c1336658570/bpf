@@ -27,7 +27,7 @@ sudo bpftrace -lv tracepoint:syscalls:sys_exit_execve
 
 """
 
-# 下面代码不能运行，trace_bpf_prog_load在内核4.18之后的内核删除了。
+# 下面代码不能运行，bpf_prog_load在内核4.18之后的内核删除了。
 
 # 声明定义BPF程序的函数。
 bpf_source = """
@@ -40,6 +40,7 @@ int trace_bpf_prog_load(void *ctx) {
 }
 """
 
+
 """
 bpf = BPF(text = bpf_source)
 # 首先是指定要跟踪的子系统，这里是bpf:，然后是子系统中的跟踪点bpf_prog_load。
@@ -47,8 +48,6 @@ bpf = BPF(text = bpf_source)
 bpf.attach_tracepoint(tp = "bpf:bpf_prog_load", fn_name = "trace_bpf_prog_load")
 bpf.trace_print()
 """
-
-
 
 bpf_source = """
 // 定义一个BPF程序，该程序将在net_dev_xmit tracepoint触发时被执行

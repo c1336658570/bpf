@@ -3,6 +3,13 @@ from bcc import BPF
 # kprobes
 
 """
+内核探针几乎可以在任何内核指令上设置动态标志或中断，并且系统损耗最
+小。当内核到达这些标志时，附加到探针的代码将被执行，之后内核将恢复
+正常模式。内核探针可以提供系统中发生事件的信息，例如，系统中打开的
+文件和正在执行的二进制文件。
+"""
+
+"""
 kprobes允许在执行任何内核指令之前插入BPF程序。你需要知道插入点的函数签名，前面已提到内核探针不是稳定的ABI，
 所以在不同的内核版本中运行相同程序设置探针时需要谨慎。当内核执行到设置探针的指令时，
 它将从代码执行处开始运行BPF程序，在BPF程序执行完成后将返回至插入BPF程序处继续执行。
@@ -20,6 +27,7 @@ bpf_source = """
 
 int do_sys_execve(struct pt_regs *ctx) {
   char comm[16];
+  // 获得当前内核正在运行的命令名，并将它保存在 comm 变量中。因为内核对命令名有 16 个字符的限制，所以我们将其定义为固定长度的数组。
   bpf_get_current_comm(&comm, sizeof(comm));
   bpf_trace_printk("executing program: %s\\n", comm);
   return 0;

@@ -10,6 +10,13 @@
  * 像静态内核跟踪点一样，USDT允许开发人员添加代码监测指令，内核将
  * USDT作为陷阱，用来执行BPF程序。USDT的Hello World只有几行代码:
  * 
+ * #include <sys/sdt.h>
+ * int main() {
+ *   DTRACE_PROBE("hello - usdt", "probe - main");
+ * }
+ * 使用Linux提供的宏DTRACE_PROBE来定义我们的第一个USDT。
+ * DTRACE_PROBE用于注册跟踪点，内核通过此跟踪点来注入BPF函数回调。宏的第一个参数是被跟踪程序。第二个参数是跟踪名。
+ * 
  * 在演示如何将 BPF 程序附加到用户定义跟踪点之前，我们需要谈论一下如何
  * 发现USDT。因为这些跟踪点以二进制格式定义在可执行文件中，我们需要
  * 一种无须研究源代码就能查看程序定义的探针的方法。提取该信息的一种方
@@ -17,7 +24,8 @@
  * gcc -o hello_usdt hello_usdt.c
  * 
  * readelf -n ./hello_usdt
- * 显示ELF文件中的信息。输出包括定义的USDT。NT_STAPSDT
+ * 显示ELF文件中的信息。命令的输出包括定义的USDT。Description为NT_STAPSDT类型的程序就是usdt
+ * 对于更复杂的二进制文件， readelf 的输出会变得烦琐。
  * 
  * 对于发现二进制文件中定义的跟踪点，更好的办怯是使用 BCC 的 tplist 工
  * 具来显示内核跟踪点和USDT。 tplist 工具的优点是输出简单，它仅显示
@@ -27,10 +35,11 @@
  * b'./hello_usdt' b'hello - usdt':b'probe - main
  * 
  * 当获得二进制文件支持的跟踪点之后，你就可以像之前的示例那样，以简单的方式将 BPF 程序附加到这些跟踪点上:
+ * 请看example.py
 */
 
 int main(int argc, char const *argv[]) {
-  // 用Linux提供的宏DTRACE_PROBE来定义我们的第一个USDT。
+  // 使用Linux提供的宏DTRACE_PROBE来定义我们的第一个USDT。
   // DTRACE_PROBE用于注册跟踪点，内核通过此跟踪点来注入BPF函数回调。宏的第一个参数是被跟踪程序。第二个参数是跟踪名。
   DTRACE_PROBE(hello - usdt, probe - main);
   return 0;

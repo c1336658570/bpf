@@ -29,6 +29,7 @@ struct trace_t {
 BPF_HASH(cache, struct trace_t);
 
 /*
+ * BCC 提供了一些工具，可以帮助你聚合和可视化栈跟踪，主要是宏BPF_STACK_TRACE。
  * 使用这个宏生成一个BPF_MAP_TYPE_STACK_TRACE类型的BPF映射，用来保存BPF程序收集的栈信息。
  * 最重要的是该BPF映射在方法上进行了增强，包括提供了从程序的上下文提取栈信息的方法，以及为聚合后提供了遍历收集到栈信息的方法。
  */
