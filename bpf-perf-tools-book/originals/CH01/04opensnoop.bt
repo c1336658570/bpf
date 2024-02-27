@@ -1,0 +1,62 @@
+#!/usr/bin/env bpftrace
+/*
+ * opensnoop	Trace open() syscalls.
+ *		For Linux, uses bpftrace and eBPF.
+ *
+ * Also a basic example of bpftrace.
+ *
+ * USAGE: opensnoop.bt
+ *
+ * This is a bpftrace version of the bcc tool of the same name.
+ *
+ * Copyright 2018 Netflix, Inc.
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ *
+ * 08-Sep-2018	Brendan Gregg	Created this.
+ */
+
+// 使用opensnoop跟踪open和openat
+// sudo opensnoop-bpfcc
+// sudo opensnoop-bpfcc -x			只显示打开文件失败的信息
+// sudo opensnoop-bpfcc -h			查看支持的参数
+
+// BCC版本的opensnoop支持更多参数，bpftrace工具通常比较简单，功能单一，只做一件事，BCC工具运行模式也比较多。
+// 比如可以通过修改bpftrace版本的opensnoop工具只显示失败的open系统调用，而BCC版本则通过命令行参数-x支持这一功能
+
+// 也可以调用opensnoop.bt，在/bpftrace/tools下，不过opensnoop.bt不支持额外参数，只有单一的一个功能，
+// 而bcc的工具支持的参数比较多
+
+ // 29行，37行和43行都是语法错误，我已经修复
+
+BEGIN
+{
+	printf("Tracing open syscalls... Hit Ctrl-C to end.\n");
+	printf("%-6s %-16s %4s %3s %s\n", "PID", "COMM", "FD", "ERR", "PATH");
+}
+
+tracepoint:syscalls:sys_enter_open,
+tracepoint:syscalls:sys_enter_openat
+{
+	// @filename[tid] = args.filename;
+	@filename[tid] = args->filename;
+}
+
+tracepoint:syscalls:sys_exit_open,
+tracepoint:syscalls:sys_exit_openat
+/@filename[tid]/
+{
+	// $ret = args.ret;
+	$ret = args->ret;
+	$fd = $ret >= 0 ? $ret : -1;
+	$errno = $ret >= 0 ? 0 : - $ret;
+
+	printf("%-6d %-16s %4d %3d %s\n", pid, comm, $fd, $errno,
+	    // str(@filename[tid]));
+			str(@filename[tid]));
+	delete(@filename[tid]);
+}
+
+END
+{
+	clear(@filename);
+}

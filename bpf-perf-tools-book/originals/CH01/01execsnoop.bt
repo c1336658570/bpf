@@ -1,0 +1,36 @@
+#!/usr/bin/env bpftrace
+
+// sudo execsnoop-bpfcc
+// sudo execsnoop-bpfcc -t		# 输出中增加时间戳信息
+// sudo./execsnoop
+// man execsnoop
+
+/*
+ * execsnoop.bt 通过 exec() 系统调用跟踪新进程。
+ * 适用于Linux，使用bpftrace和eBPF。
+ */
+
+// 35行有问题，已经修复
+
+// 条件编译的一部分，检查是否定义了BPFTRACE_HAVE_BTF宏。如果未定义，就包含linux/sched.h头文件。
+#ifndef BPFTRACE_HAVE_BTF
+#include <linux/sched.h>
+#endif
+
+// bpftrace的特殊节，表示脚本的开始处。在这里，打印表头，指定输出格式，显示时间、进程ID（PID）、父进程ID（PPID）和参数（ARGS）。
+BEGIN
+{
+	printf("%-10s %-7s %-7s %s\n", "TIME(ms)", "PID", "PPID", "ARGS");
+}
+
+// 当sys_enter_exec系列的系统调用发生时执行。
+tracepoint:syscalls:sys_enter_exec*
+{
+	// 创建一个变量$task，存储当前任务的结构体指针，类型为struct task_struct。
+	$task = (struct task_struct *)curtask;
+	// 打印时间（以毫秒为单位）、进程ID和父进程ID。elapsed表示自开始追踪以来的经过时间，pid是当前进程的ID，$task->real_parent->pid表示父进程的ID。
+	printf("%-10u %-7d %-7d ", elapsed / 1e6, pid, $task->real_parent->pid);
+	// 调用join函数，将args->argv数组中的参数连接成一个字符串并打印出来。
+	join(args->argv);
+	// join(args.argv);
+}

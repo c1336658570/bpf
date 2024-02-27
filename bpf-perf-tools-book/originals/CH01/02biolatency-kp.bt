@@ -1,0 +1,43 @@
+#!/usr/bin/env bpftrace
+
+// biolatency					# 它可以绘制块设备IO（disk I/O）的延迟直方图
+// sudo biolatency-bpfcc -m		# -m使得统计值以毫秒为单位输出 报错kprobe不存在，应该是我的新版本内核函数名变了
+// sudo ./biolatency.bt
+// sudo ./biolatency-kp.bt
+
+/*
+ * biolatency.bt 		块I/O延迟的直方图。
+ * 适用于Linux，使用bpftrace和eBPF。
+ */
+
+// bpftrace的特殊节，表示脚本的开始处。在这里，打印一条消息，提示用户正在追踪块设备I/O操作，同时提醒用户可以使用Ctrl-C结束追踪。
+BEGIN
+{
+	printf("Tracing block device I/O... Hit Ctrl-C to end.\n");
+}
+
+// 表示在blk_account_io_start和__blk_account_io_start两个内核探针上注册事件。这些探针通常用于追踪块设备I/O的开始。
+kprobe:blk_account_io_start,
+kprobe:__blk_account_io_start
+{
+	// 当上述事件发生时，记录当前时间（以纳秒为单位）到一个关联数组。@start中，键为arg0，通常是块设备相关的标识符。
+	@start[arg0] = nsecs;
+}
+
+// 在blk_account_io_done和__blk_account_io_done两个内核探针上注册事件。
+kprobe:blk_account_io_done,
+kprobe:__blk_account_io_done
+// 这个条件表示只处理在之前的事件中记录的块设备标识符arg0对应的I/O操作。
+/@start[arg0]/
+{
+	// 计算I/O操作的执行时间（以微秒为单位），并将其存储在@usecs关联数组的直方图中。
+	@usecs = hist((nsecs - @start[arg0]) / 1000);
+	// 删除之前记录的开始时间，以清理关联数组。
+	delete(@start[arg0]);
+}
+
+// bpftrace的特殊节，表示脚本的结束处。在这里，清空之前记录的开始时间关联数组@start。
+END
+{
+	clear(@start);
+}

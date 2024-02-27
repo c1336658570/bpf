@@ -1,0 +1,9 @@
+# bpftrace跟踪open()，如下是一个单行命令，跟踪open
+sudo bpftrace -e 'tracepoint:syscalls:sys_enter_open { printf("%s %s\n", comm, str(args->filename)); }'
+# 输出结果是进程的名字和传递给open系统调用的文件名
+
+# 列出open系统调用和其变体系统调用
+sudo bpftrace -l 'tracepoint:syscalls:sys_enter_open*'
+
+# 统计open和其变体执行的次数
+sudo bpftrace -e 'tracepoint:syscalls:sys_enter_open* { @[probe] = count(); }'
